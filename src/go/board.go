@@ -20,6 +20,7 @@ const (
   SPACE Cell = 0
   BLACK Cell = 1
   WHITE Cell = 2
+  OB Cell = 3
 )
 func (c Cell)reverse() Cell {
   if c == BLACK { return WHITE }
@@ -49,6 +50,7 @@ func New13() *Board { return New(13) }
 func New9() *Board { return New(9) }
 
 func (b *Board)At(x int, y int) Cell {
+  if x < 1 || b.size < x || y < 1 || b.size < y { return OB }
   return b.board[y-1][x-1]
 }
 
@@ -57,34 +59,107 @@ func (b *Board)charAt(x int, y int) byte {
 }
 
 func (b *Board)PutAt(c Cell, x int, y int) (int, PutStatus) {
-  if b.board[y-1][x-1] != SPACE {
+  if b.At(x, y) != SPACE {
     return -1, OCCUPIED
   }
 
+  b.putAt(c, x, y)
   count := 0
   rc := c.reverse()
-  if b.isSurrounded(x-1, y, rc) { count += b.takeOff(x-1, y) }
-  if b.isSurrounded(x+1, y, rc) { count += b.takeOff(x+1, y) }
-  if b.isSurrounded(x, y-1, rc) { count += b.takeOff(x, y-1) }
-  if b.isSurrounded(x, y+1, rc) { count += b.takeOff(x, y+1) }
-  if b.isSurrounded(x, y, c) { return -1, TAKEN }
+  if b.shouldBeTakenOff(x-1, y, rc) { count += b.takeOff(x-1, y, rc) }
+  if b.shouldBeTakenOff(x+1, y, rc) { count += b.takeOff(x+1, y, rc) }
+  if b.shouldBeTakenOff(x, y-1, rc) { count += b.takeOff(x, y-1, rc) }
+  if b.shouldBeTakenOff(x, y+1, rc) { count += b.takeOff(x, y+1, rc) }
 
-  b.putAt(c, x, y)
+  if b.shouldBeTakenOff(x, y, c) {
+    b.putAt(SPACE, x, y)
+    return -1, TAKEN
+  }
+
   return count, OK
+}
+
+func (b *Board)TakeAt(x int, y int) Cell {
+  c := b.At(x, y)
+  b.putAt(SPACE, x, y)
+  return c
 }
 
 func (b *Board)putAt(c Cell, x int, y int) {
   b.board[y-1][x-1] = c
 }
 
-func (b *Board)isSurrounded(x int, y int, c Cell) bool {
-  if x < 1 || b.size < x || y < 1 || b.size < y { return false }
-  if b.At(x, y) != c { return false }
-  return false
+func (b *Board)createCheckTable() [][]int {
+  checked := make([][]int, b.size+2)
+  for i := 0; i <= b.size+1; i++ {
+    checked[i] = make([]int, b.size+2)
+    for j := 0; j <= b.size+1; j++ {
+      checked[i][j] = 0
+    }
+  }
+  return checked
 }
 
-func (b *Board)takeOff(x int, y int) int {
-  return 0
+func (b *Board)shouldBeTakenOff(x int, y int, c Cell) bool {
+  if b.At(x, y) != c { return false }
+  return b.isTangentToSpace(x, y, c, b.createCheckTable())
+}
+
+func (b *Board)isTangentToSpace(x int, y int, c Cell, checked [][]int) bool {
+  if checked[y][x-1] == 0 {
+    checked[y][x-1] = 1
+    switch b.At(x-1, y) {
+      case SPACE:
+        return false
+      case c:
+        if !b.isTangentToSpace(x-1, y, c, checked) { return false }
+    }
+  }
+
+  if checked[y][x+1] == 0 {
+    checked[y][x+1] = 1
+    switch b.At(x+1, y) {
+      case SPACE:
+        return false
+      case c:
+        if !b.isTangentToSpace(x+1, y, c, checked) { return false }
+    }
+  }
+
+  if checked[y-1][x] == 0 {
+    checked[y-1][x] = 1
+    switch b.At(x, y-1) {
+      case SPACE:
+        return false
+      case c:
+        if !b.isTangentToSpace(x, y-1, c, checked) { return false }
+    }
+  }
+
+  if checked[y+1][x] == 0 {
+    checked[y+1][x] = 1
+    switch b.At(x, y+1) {
+      case SPACE:
+        return false
+      case c:
+        if !b.isTangentToSpace(x, y+1, c, checked) { return false }
+    }
+  }
+
+  return true
+}
+
+func (b *Board)takeOff(x int, y int, c Cell) int {
+  count := 0
+  if b.At(x, y) == c {
+    b.TakeAt(x, y)
+    count++
+    count += b.takeOff(x-1, y, c)
+    count += b.takeOff(x+1, y, c)
+    count += b.takeOff(x, y-1, c)
+    count += b.takeOff(x, y+1, c)
+  }
+  return count
 }
 
 func (b *Board)Load(filepath string) {
@@ -109,9 +184,9 @@ func (b *Board)Load(filepath string) {
     x := 1
     for i := 0; i < len(line); i++ {
       switch line[i] {
-      case '+': b.PutAt(SPACE, x, y)
-      case '@': b.PutAt(BLACK, x, y)
-      case 'O': b.PutAt(WHITE, x, y)
+      case '+': b.putAt(SPACE, x, y)
+      case '@': b.putAt(BLACK, x, y)
+      case 'O': b.putAt(WHITE, x, y)
       }
       x++
       if b.size < x { break }
