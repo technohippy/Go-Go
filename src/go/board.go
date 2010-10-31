@@ -12,6 +12,7 @@ const (
   OK PutStatus = 0
   OCCUPIED PutStatus = 1
   KOU PutStatus = 2
+  TAKEN PutStatus = 3
 )
 
 type Cell int
@@ -20,6 +21,11 @@ const (
   BLACK Cell = 1
   WHITE Cell = 2
 )
+func (c Cell)reverse() Cell {
+  if c == BLACK { return WHITE }
+  if c == WHITE { return BLACK }
+  return SPACE
+}
 
 type Board struct {
   board [][]Cell
@@ -54,16 +60,26 @@ func (b *Board)PutAt(c Cell, x int, y int) (int, PutStatus) {
   if b.board[y-1][x-1] != SPACE {
     return -1, OCCUPIED
   }
+
   count := 0
-  if b.isSurrounded(x-1, y, c) { count += b.takeOff(x-1, y) }
-  if b.isSurrounded(x+1, y, c) { count += b.takeOff(x+1, y) }
-  if b.isSurrounded(x, y-1, c) { count += b.takeOff(x, y-1) }
-  if b.isSurrounded(x, y+1, c) { count += b.takeOff(x, y+1) }
-  b.board[y-1][x-1] = c
+  rc := c.reverse()
+  if b.isSurrounded(x-1, y, rc) { count += b.takeOff(x-1, y) }
+  if b.isSurrounded(x+1, y, rc) { count += b.takeOff(x+1, y) }
+  if b.isSurrounded(x, y-1, rc) { count += b.takeOff(x, y-1) }
+  if b.isSurrounded(x, y+1, rc) { count += b.takeOff(x, y+1) }
+  if b.isSurrounded(x, y, c) { return -1, TAKEN }
+
+  b.putAt(c, x, y)
   return count, OK
 }
 
+func (b *Board)putAt(c Cell, x int, y int) {
+  b.board[y-1][x-1] = c
+}
+
 func (b *Board)isSurrounded(x int, y int, c Cell) bool {
+  if x < 1 || b.size < x || y < 1 || b.size < y { return false }
+  if b.At(x, y) != c { return false }
   return false
 }
 
