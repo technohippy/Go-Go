@@ -47,9 +47,9 @@ func (cp *ConsolePlayer)Next(b *board.Board) player.Status {
     }
     x, _ := strconv.Atoi(xy[0])
     y, _ := strconv.Atoi(xy[1])
-    _, ok := b.PutAt(color, x, y)
+    takenOffs, ok := b.PutAt(color, x, y)
     if ok == board.OK {
-      fmt.Printf("[%s] Put (%d, %d)\n", cp.name, x, y)
+      fmt.Printf("[%s] Put (%d, %d) and Take %d\n", cp.name, x, y, len(takenOffs))
       break
     }
   }

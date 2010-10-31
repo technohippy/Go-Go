@@ -5,6 +5,7 @@ import (
   "os"
   "bufio"
   "regexp"
+  "container/vector"
 )
 
 type PutStatus int
@@ -27,6 +28,8 @@ func (c Cell)reverse() Cell {
   if c == WHITE { return BLACK }
   return SPACE
 }
+
+type Point [2]int
 
 type Board struct {
   board [][]Cell
@@ -58,25 +61,25 @@ func (b *Board)charAt(x int, y int) byte {
   return map[Cell]byte{SPACE:'+', BLACK:'@', WHITE:'O'}[b.At(x, y)]
 }
 
-func (b *Board)PutAt(c Cell, x int, y int) (int, PutStatus) {
+func (b *Board)PutAt(c Cell, x int, y int) (vector.Vector, PutStatus) {
   if b.At(x, y) != SPACE {
-    return -1, OCCUPIED
+    return nil, OCCUPIED
   }
 
   b.putAt(c, x, y)
-  count := 0
+  takenOffs := vector.Vector{}
   rc := c.reverse()
-  if b.shouldBeTakenOff(x-1, y, rc) { count += b.takeOff(x-1, y, rc) }
-  if b.shouldBeTakenOff(x+1, y, rc) { count += b.takeOff(x+1, y, rc) }
-  if b.shouldBeTakenOff(x, y-1, rc) { count += b.takeOff(x, y-1, rc) }
-  if b.shouldBeTakenOff(x, y+1, rc) { count += b.takeOff(x, y+1, rc) }
+  if b.shouldBeTakenOff(x-1, y, rc) { b.takeOff(x-1, y, rc, &takenOffs) }
+  if b.shouldBeTakenOff(x+1, y, rc) { b.takeOff(x+1, y, rc, &takenOffs) }
+  if b.shouldBeTakenOff(x, y-1, rc) { b.takeOff(x, y-1, rc, &takenOffs) }
+  if b.shouldBeTakenOff(x, y+1, rc) { b.takeOff(x, y+1, rc, &takenOffs) }
 
   if b.shouldBeTakenOff(x, y, c) {
     b.putAt(SPACE, x, y)
-    return -1, TAKEN
+    return nil, TAKEN
   }
 
-  return count, OK
+  return takenOffs, OK
 }
 
 func (b *Board)TakeAt(x int, y int) Cell {
@@ -149,17 +152,15 @@ func (b *Board)isTangentToSpace(x int, y int, c Cell, checked [][]int) bool {
   return true
 }
 
-func (b *Board)takeOff(x int, y int, c Cell) int {
-  count := 0
+func (b *Board)takeOff(x int, y int, c Cell, takenOffs *vector.Vector) {
   if b.At(x, y) == c {
     b.TakeAt(x, y)
-    count++
-    count += b.takeOff(x-1, y, c)
-    count += b.takeOff(x+1, y, c)
-    count += b.takeOff(x, y-1, c)
-    count += b.takeOff(x, y+1, c)
+    takenOffs.Push(Point{x, y})
+    b.takeOff(x-1, y, c, takenOffs)
+    b.takeOff(x+1, y, c, takenOffs)
+    b.takeOff(x, y-1, c, takenOffs)
+    b.takeOff(x, y+1, c, takenOffs)
   }
-  return count
 }
 
 func (b *Board)Load(filepath string) {
