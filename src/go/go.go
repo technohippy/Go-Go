@@ -47,8 +47,8 @@ func main() {
   fmt.Printf("%v", b)
 
   players := [2]player.Player{
-    console_player.NewConsolePlayer("ando", player.SENTE),
-    console_player.NewConsolePlayer("yasushi", player.GOTE)}
+    console_player.New("ando", player.SENTE),
+    console_player.New("yasushi", player.GOTE)}
 
   start(b, players)
 }

@@ -16,7 +16,7 @@ type ConsolePlayer struct {
   teban player.Teban
 }
 
-func NewConsolePlayer(n string, t player.Teban) *ConsolePlayer {
+func New(n string, t player.Teban) *ConsolePlayer {
   return &ConsolePlayer{n, t}
 }
 

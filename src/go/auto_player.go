@@ -9,7 +9,7 @@ type AutoPlayer struct {
   teban player.Teban
 }
 
-func NewAutoPlayer(t player.Teban) *AutoPlayer {
+func New(t player.Teban) *AutoPlayer {
   return &AutoPlayer{}
 }
 
