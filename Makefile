@@ -2,7 +2,7 @@ include $(GOROOT)/src/Make.inc
 
 TARG=go-go
 GOFILES=src/go/go.go
-O_FILES=point.$O cell.$O history.$O board.$O player.$O console_player.$O auto_player.$O go.$O
+O_FILES=point.$O cell.$O history.$O board.$O player.$O console_player.$O auto_player.$O server.$O go.$O
 
 all: $(O_FILES)
 install: $(O_FILES)
@@ -29,6 +29,9 @@ console_player.$O:
 
 auto_player.$O:
 	$(QUOTED_GOBIN)/$(GC) -o auto_player.$O src/go/auto_player.go
+
+server.$O:
+	$(QUOTED_GOBIN)/$(GC) -o server.$O src/go/server.go
 
 go.$O:
 	$(QUOTED_GOBIN)/$(GC) -o go.$O src/go/go.go

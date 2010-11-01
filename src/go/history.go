@@ -38,6 +38,10 @@ func (h *History)Add(color cell.Cell, x int, y int, takenPoints vector.Vector) {
   h.history.Push(record)
 }
 
+func (h *History)Pass(color cell.Cell) {
+  h.Add(color, -1, -1, nil)
+}
+
 func (h *History)Last() Record {
   return h.history.Last().(Record)
 }

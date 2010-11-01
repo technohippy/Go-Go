@@ -1,0 +1,7 @@
+#board {
+  border: 3px solid black;
+  background-color: #F93;
+  position: absolute;
+  top: 15px;
+  left: 15px;
+}

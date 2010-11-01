@@ -1,3 +1,8 @@
+/*
+This package implemnets a Go board. The move on a Go board is ristricted by Go rules.
+
+Ref. http://en.wikipedia.org/wiki/Go_(game)
+*/
 package board
 
 import (
@@ -11,47 +16,66 @@ import (
   "./history"
 )
 
-type PutStatus int
+// Response codes for #PutAt
+type PutResponse int
+
+// Response codes for #PutAt
 const (
-  OK PutStatus = 0
-  OCCUPIED PutStatus = 1
-  KOU PutStatus = 2
-  FORBIDDEN PutStatus = 3
+  OK PutResponse = 0
+  OCCUPIED PutResponse = 1
+  KO PutResponse = 2
+  FORBIDDEN PutResponse = 3
 )
 
+// Go board
 type Board struct {
   board [][]cell.Cell
   size int
   history *history.History
 }
 
+// New returns a Go board having given grid size.
 func New(size int) *Board {
   b := new(Board)
   b.history = history.New()
   b.size = size
-  b.board = make([][]cell.Cell, size)
-  for y := 0; y < size; y++ {
-    b.board[y] = make([]cell.Cell, size)
-    for x := 0; x < size; x++ {
+  b.board = make([][]cell.Cell, size+2)
+  for y := 0; y < size+2; y++ {
+    b.board[y] = make([]cell.Cell, size+2)
+    for x := 0; x < size+2; x++ {
       b.board[y][x] = cell.SPACE
     }
   }
+  for i := 0; i < size+2; i++ {
+    b.board[0][i] = cell.OB
+    b.board[size+1][i] = cell.OB
+    b.board[i][0] = cell.OB
+    b.board[i][size+1] = cell.OB
+  }
   return b
 }
+
+// New19 returns a Go board, whose grid size is 19.
 func New19() *Board { return New(19) }
+
+// New13 returns a Go board, whose grid size is 13.
 func New13() *Board { return New(13) }
+
+// New9 returns a Go board, whose grid size is 9.
 func New9() *Board { return New(9) }
 
+// At returns a piece at the given position.
 func (b *Board)At(x int, y int) cell.Cell {
-  if x < 1 || b.size < x || y < 1 || b.size < y { return cell.OB }
-  return b.board[y-1][x-1]
+  return b.board[y][x]
 }
 
+// charAt returns a character for a piece at the given position.
 func (b *Board)charAt(x int, y int) byte {
   return map[cell.Cell]byte{cell.SPACE:'+', cell.BLACK:'@', cell.WHITE:'O'}[b.At(x, y)]
 }
 
-func (b *Board)PutAt(c cell.Cell, x int, y int) (vector.Vector, PutStatus) {
+// PutAt will put a give piece at the given position and return removed pieces and the response code.
+func (b *Board)PutAt(c cell.Cell, x int, y int) (vector.Vector, PutResponse) {
   if b.At(x, y) != cell.SPACE {
     return nil, OCCUPIED
   }
@@ -59,12 +83,12 @@ func (b *Board)PutAt(c cell.Cell, x int, y int) (vector.Vector, PutStatus) {
   b.putAt(c, x, y)
   takenOffs := vector.Vector{}
   rc := c.Reverse()
-  if b.shouldBeTakenOff(x-1, y, rc) { b.takeOff(x-1, y, rc, &takenOffs) }
-  if b.shouldBeTakenOff(x+1, y, rc) { b.takeOff(x+1, y, rc, &takenOffs) }
-  if b.shouldBeTakenOff(x, y-1, rc) { b.takeOff(x, y-1, rc, &takenOffs) }
-  if b.shouldBeTakenOff(x, y+1, rc) { b.takeOff(x, y+1, rc, &takenOffs) }
+  if b.shouldTakeOff(x-1, y, rc) { b.takeOff(x-1, y, rc, &takenOffs) }
+  if b.shouldTakeOff(x+1, y, rc) { b.takeOff(x+1, y, rc, &takenOffs) }
+  if b.shouldTakeOff(x, y-1, rc) { b.takeOff(x, y-1, rc, &takenOffs) }
+  if b.shouldTakeOff(x, y+1, rc) { b.takeOff(x, y+1, rc, &takenOffs) }
 
-  if b.shouldBeTakenOff(x, y, c) {
+  if b.shouldTakeOff(x, y, c) {
     b.putAt(cell.SPACE, x, y)
     return nil, FORBIDDEN
   }
@@ -73,7 +97,7 @@ func (b *Board)PutAt(c cell.Cell, x int, y int) (vector.Vector, PutStatus) {
     b.putAt(cell.SPACE, x, y)
     taken := takenOffs.Last().(point.Point)
     b.putAt(c.Reverse(), taken.X(), taken.Y())
-    return nil, KOU
+    return nil, KO
   }
 
   b.history.Add(c, x, y, takenOffs)
@@ -88,7 +112,11 @@ func (b *Board)TakeAt(x int, y int) cell.Cell {
 }
 
 func (b *Board)putAt(c cell.Cell, x int, y int) {
-  b.board[y-1][x-1] = c
+  b.board[y][x] = c
+}
+
+func (b *Board)Pass(c cell.Cell) {
+  b.history.Pass(c)
 }
 
 func (b *Board)createCheckTable() [][]int {
@@ -102,7 +130,7 @@ func (b *Board)createCheckTable() [][]int {
   return checked
 }
 
-func (b *Board)shouldBeTakenOff(x int, y int, c cell.Cell) bool {
+func (b *Board)shouldTakeOff(x int, y int, c cell.Cell) bool {
   if b.At(x, y) != c { return false }
   return b.isTangentToSpace(x, y, c, b.createCheckTable())
 }
@@ -162,6 +190,7 @@ func (b *Board)takeOff(x int, y int, c cell.Cell, takenOffs *vector.Vector) {
   }
 }
 
+// Load will load a file which writes a stage of a board and apply it to the board.
 func (b *Board)Load(filepath string) {
   file, err := os.Open(filepath, os.O_RDONLY, 0666)
   if err != nil {
@@ -209,5 +238,18 @@ func (b *Board)String() string {
     }
     ret = fmt.Sprintf("%s\n", ret)
   }
+  return ret
+}
+
+func (b *Board)Json() string {
+  ret := fmt.Sprintf("({'size':%d, 'board':[", b.size)
+  for y := 0; y < b.size; y++ {
+    ret = fmt.Sprintf("%s[", ret)
+    for x := 0; x < b.size; x++ {
+      ret = fmt.Sprintf("%s'%c',", ret, b.charAt(x+1, y+1))
+    }
+    ret = fmt.Sprintf("%s],", ret)
+  }
+  ret = fmt.Sprintf("%s]})", ret)
   return ret
 }

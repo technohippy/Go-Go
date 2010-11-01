@@ -39,10 +39,11 @@ func (cp *ConsolePlayer)Next(b *board.Board) player.Status {
   }
 
   for {
-    fmt.Print("x, y > ")
+    fmt.Printf("[%s] x, y > ", cp.name)
     in, _ := r.ReadString('\n')
     xy := re.FindAllString(in, 2)
     if len(xy) < 2 {
+      b.Pass(color)
       fmt.Printf("[%s] Pass!\n", cp.name)
       return player.PASS
     }
@@ -52,7 +53,7 @@ func (cp *ConsolePlayer)Next(b *board.Board) player.Status {
     if ok == board.OK {
       fmt.Printf("[%s] Put (%d, %d) and Take %d\n", cp.name, x, y, len(takenOffs))
       break
-    } else if ok == board.KOU {
+    } else if ok == board.KO {
       fmt.Printf("[%s] Kou\n", cp.name)
     } else if ok == board.FORBIDDEN {
       fmt.Printf("[%s] Forbidden\n", cp.name)
