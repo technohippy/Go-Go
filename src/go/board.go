@@ -6,6 +6,9 @@ import (
   "bufio"
   "regexp"
   "container/vector"
+  "./point"
+  "./cell"
+  "./history"
 )
 
 type PutStatus int
@@ -16,34 +19,21 @@ const (
   TAKEN PutStatus = 3
 )
 
-type Cell int
-const (
-  SPACE Cell = 0
-  BLACK Cell = 1
-  WHITE Cell = 2
-  OB Cell = 3
-)
-func (c Cell)reverse() Cell {
-  if c == BLACK { return WHITE }
-  if c == WHITE { return BLACK }
-  return SPACE
-}
-
-type Point [2]int
-
 type Board struct {
-  board [][]Cell
+  board [][]cell.Cell
   size int
+  history *history.History
 }
 
 func New(size int) *Board {
   b := new(Board)
+  b.history = history.New()
   b.size = size
-  b.board = make([][]Cell, size)
+  b.board = make([][]cell.Cell, size)
   for y := 0; y < size; y++ {
-    b.board[y] = make([]Cell, size)
+    b.board[y] = make([]cell.Cell, size)
     for x := 0; x < size; x++ {
-      b.board[y][x] = SPACE
+      b.board[y][x] = cell.SPACE
     }
   }
   return b
@@ -52,43 +42,52 @@ func New19() *Board { return New(19) }
 func New13() *Board { return New(13) }
 func New9() *Board { return New(9) }
 
-func (b *Board)At(x int, y int) Cell {
-  if x < 1 || b.size < x || y < 1 || b.size < y { return OB }
+func (b *Board)At(x int, y int) cell.Cell {
+  if x < 1 || b.size < x || y < 1 || b.size < y { return cell.OB }
   return b.board[y-1][x-1]
 }
 
 func (b *Board)charAt(x int, y int) byte {
-  return map[Cell]byte{SPACE:'+', BLACK:'@', WHITE:'O'}[b.At(x, y)]
+  return map[cell.Cell]byte{cell.SPACE:'+', cell.BLACK:'@', cell.WHITE:'O'}[b.At(x, y)]
 }
 
-func (b *Board)PutAt(c Cell, x int, y int) (vector.Vector, PutStatus) {
-  if b.At(x, y) != SPACE {
+func (b *Board)PutAt(c cell.Cell, x int, y int) (vector.Vector, PutStatus) {
+  if b.At(x, y) != cell.SPACE {
     return nil, OCCUPIED
   }
 
   b.putAt(c, x, y)
   takenOffs := vector.Vector{}
-  rc := c.reverse()
+  rc := c.Reverse()
   if b.shouldBeTakenOff(x-1, y, rc) { b.takeOff(x-1, y, rc, &takenOffs) }
   if b.shouldBeTakenOff(x+1, y, rc) { b.takeOff(x+1, y, rc, &takenOffs) }
   if b.shouldBeTakenOff(x, y-1, rc) { b.takeOff(x, y-1, rc, &takenOffs) }
   if b.shouldBeTakenOff(x, y+1, rc) { b.takeOff(x, y+1, rc, &takenOffs) }
 
   if b.shouldBeTakenOff(x, y, c) {
-    b.putAt(SPACE, x, y)
+    b.putAt(cell.SPACE, x, y)
     return nil, TAKEN
   }
+
+  if len(takenOffs) == 1 && b.history.IsKou(c, x, y) {
+    b.putAt(cell.SPACE, x, y)
+    taken := takenOffs.Last().(point.Point)
+    b.putAt(c.Reverse(), taken.X(), taken.Y())
+    return nil, KOU
+  }
+
+  b.history.Add(c, x, y, takenOffs)
 
   return takenOffs, OK
 }
 
-func (b *Board)TakeAt(x int, y int) Cell {
+func (b *Board)TakeAt(x int, y int) cell.Cell {
   c := b.At(x, y)
-  b.putAt(SPACE, x, y)
+  b.putAt(cell.SPACE, x, y)
   return c
 }
 
-func (b *Board)putAt(c Cell, x int, y int) {
+func (b *Board)putAt(c cell.Cell, x int, y int) {
   b.board[y-1][x-1] = c
 }
 
@@ -103,16 +102,16 @@ func (b *Board)createCheckTable() [][]int {
   return checked
 }
 
-func (b *Board)shouldBeTakenOff(x int, y int, c Cell) bool {
+func (b *Board)shouldBeTakenOff(x int, y int, c cell.Cell) bool {
   if b.At(x, y) != c { return false }
   return b.isTangentToSpace(x, y, c, b.createCheckTable())
 }
 
-func (b *Board)isTangentToSpace(x int, y int, c Cell, checked [][]int) bool {
+func (b *Board)isTangentToSpace(x int, y int, c cell.Cell, checked [][]int) bool {
   if checked[y][x-1] == 0 {
     checked[y][x-1] = 1
     switch b.At(x-1, y) {
-      case SPACE:
+      case cell.SPACE:
         return false
       case c:
         if !b.isTangentToSpace(x-1, y, c, checked) { return false }
@@ -122,7 +121,7 @@ func (b *Board)isTangentToSpace(x int, y int, c Cell, checked [][]int) bool {
   if checked[y][x+1] == 0 {
     checked[y][x+1] = 1
     switch b.At(x+1, y) {
-      case SPACE:
+      case cell.SPACE:
         return false
       case c:
         if !b.isTangentToSpace(x+1, y, c, checked) { return false }
@@ -132,7 +131,7 @@ func (b *Board)isTangentToSpace(x int, y int, c Cell, checked [][]int) bool {
   if checked[y-1][x] == 0 {
     checked[y-1][x] = 1
     switch b.At(x, y-1) {
-      case SPACE:
+      case cell.SPACE:
         return false
       case c:
         if !b.isTangentToSpace(x, y-1, c, checked) { return false }
@@ -142,7 +141,7 @@ func (b *Board)isTangentToSpace(x int, y int, c Cell, checked [][]int) bool {
   if checked[y+1][x] == 0 {
     checked[y+1][x] = 1
     switch b.At(x, y+1) {
-      case SPACE:
+      case cell.SPACE:
         return false
       case c:
         if !b.isTangentToSpace(x, y+1, c, checked) { return false }
@@ -152,10 +151,10 @@ func (b *Board)isTangentToSpace(x int, y int, c Cell, checked [][]int) bool {
   return true
 }
 
-func (b *Board)takeOff(x int, y int, c Cell, takenOffs *vector.Vector) {
+func (b *Board)takeOff(x int, y int, c cell.Cell, takenOffs *vector.Vector) {
   if b.At(x, y) == c {
     b.TakeAt(x, y)
-    takenOffs.Push(Point{x, y})
+    takenOffs.Push(point.Point{x, y})
     b.takeOff(x-1, y, c, takenOffs)
     b.takeOff(x+1, y, c, takenOffs)
     b.takeOff(x, y-1, c, takenOffs)
@@ -185,9 +184,9 @@ func (b *Board)Load(filepath string) {
     x := 1
     for i := 0; i < len(line); i++ {
       switch line[i] {
-      case '+': b.putAt(SPACE, x, y)
-      case '@': b.putAt(BLACK, x, y)
-      case 'O': b.putAt(WHITE, x, y)
+      case '+': b.putAt(cell.SPACE, x, y)
+      case '@': b.putAt(cell.BLACK, x, y)
+      case 'O': b.putAt(cell.WHITE, x, y)
       }
       x++
       if b.size < x { break }

@@ -6,6 +6,7 @@ import (
   "bufio"
   "regexp"
   "strconv"
+  "./cell"
   "./board"
   "./player"
 )
@@ -30,11 +31,11 @@ func (cp *ConsolePlayer)Teban() player.Teban {
 func (cp *ConsolePlayer)Next(b *board.Board) player.Status {
   r := bufio.NewReader(os.Stdin)
   re := regexp.MustCompile("[0-9]+")
-  var color board.Cell
+  var color cell.Cell
   if cp.teban == player.SENTE {
-    color = board.BLACK
+    color = cell.BLACK
   } else {
-    color = board.WHITE
+    color = cell.WHITE
   }
 
   for {
@@ -51,7 +52,22 @@ func (cp *ConsolePlayer)Next(b *board.Board) player.Status {
     if ok == board.OK {
       fmt.Printf("[%s] Put (%d, %d) and Take %d\n", cp.name, x, y, len(takenOffs))
       break
+    } else if ok == board.KOU {
+      fmt.Printf("[%s] Kou\n", cp.name)
+    } else if ok == board.TAKEN {
+      fmt.Printf("[%s] Forbidden\n", cp.name)
     }
+    /*
+    switch ok {
+      case board.OK:
+        fmt.Printf("[%s] Put (%d, %d) and Take %d\n", cp.name, x, y, len(takenOffs))
+        break
+      case board.KOU:
+        fmt.Printf("[%s] Kou\n", cp.name)
+      case board.TAKEN:
+        fmt.Printf("[%s] Forbidden\n", cp.name)
+    }
+    */
   }
   return player.PUT
 }
