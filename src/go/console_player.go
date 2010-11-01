@@ -54,20 +54,9 @@ func (cp *ConsolePlayer)Next(b *board.Board) player.Status {
       break
     } else if ok == board.KOU {
       fmt.Printf("[%s] Kou\n", cp.name)
-    } else if ok == board.TAKEN {
+    } else if ok == board.FORBIDDEN {
       fmt.Printf("[%s] Forbidden\n", cp.name)
     }
-    /*
-    switch ok {
-      case board.OK:
-        fmt.Printf("[%s] Put (%d, %d) and Take %d\n", cp.name, x, y, len(takenOffs))
-        break
-      case board.KOU:
-        fmt.Printf("[%s] Kou\n", cp.name)
-      case board.TAKEN:
-        fmt.Printf("[%s] Forbidden\n", cp.name)
-    }
-    */
   }
   return player.PUT
 }

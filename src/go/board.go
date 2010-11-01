@@ -16,7 +16,7 @@ const (
   OK PutStatus = 0
   OCCUPIED PutStatus = 1
   KOU PutStatus = 2
-  TAKEN PutStatus = 3
+  FORBIDDEN PutStatus = 3
 )
 
 type Board struct {
@@ -66,7 +66,7 @@ func (b *Board)PutAt(c cell.Cell, x int, y int) (vector.Vector, PutStatus) {
 
   if b.shouldBeTakenOff(x, y, c) {
     b.putAt(cell.SPACE, x, y)
-    return nil, TAKEN
+    return nil, FORBIDDEN
   }
 
   if len(takenOffs) == 1 && b.history.IsKou(c, x, y) {
