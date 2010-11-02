@@ -43,7 +43,7 @@ func startServer(port int, b *board.Board, ps [2]player.Player) {
 
 func main() {
   server := flag.Bool("server", false, "run server or not")
-  port := flag.Int("port", 32100, "port number")
+  port := flag.Int("port", 55555, "port number")
   size := flag.Int("size", 19, "9, 13 or 19")
   filepath := flag.String("load", "", "load figure")
   flag.Parse()
