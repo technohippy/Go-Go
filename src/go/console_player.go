@@ -9,6 +9,7 @@ import (
   "./cell"
   "./board"
   "./player"
+  "./history"
 )
 
 type ConsolePlayer struct {
@@ -28,7 +29,9 @@ func (cp *ConsolePlayer)Teban() player.Teban {
   return cp.teban
 }
 
-func (cp *ConsolePlayer)Next(b *board.Board) player.Status {
+func (cp *ConsolePlayer)Next(b *board.Board, h *history.History, agehama [2]int) *player.Response {
+  res := new(player.Response)
+
   r := bufio.NewReader(os.Stdin)
   re := regexp.MustCompile("[0-9]+")
   var color cell.Cell
@@ -45,19 +48,24 @@ func (cp *ConsolePlayer)Next(b *board.Board) player.Status {
     if len(xy) < 2 {
       b.Pass(color)
       fmt.Printf("[%s] Pass!\n", cp.name)
-      return player.PASS
-    }
-    x, _ := strconv.Atoi(xy[0])
-    y, _ := strconv.Atoi(xy[1])
-    takenOffs, ok := b.PutAt(color, x, y)
-    if ok == board.OK {
-      fmt.Printf("[%s] Put (%d, %d) and Take %d\n", cp.name, x, y, len(takenOffs))
-      break
-    } else if ok == board.KO {
-      fmt.Printf("[%s] Kou\n", cp.name)
-    } else if ok == board.FORBIDDEN {
-      fmt.Printf("[%s] Forbidden\n", cp.name)
+      res.Status = player.PASS
+    } else {
+      x, _ := strconv.Atoi(xy[0])
+      y, _ := strconv.Atoi(xy[1])
+      takenOffs, ok := b.PutAt(color, x, y)
+      if ok == board.OK {
+        fmt.Printf("[%s] Put (%d, %d) and Take %d\n", cp.name, x, y, len(takenOffs))
+        res.Status = player.PUT
+        res.Data = map[string]interface{}{"x":x, "y":y, "taken":takenOffs}
+        break
+      } else if ok == board.KO {
+        fmt.Printf("[%s] Ko\n", cp.name)
+        res.Status = player.KO
+      } else if ok == board.FORBIDDEN {
+        fmt.Printf("[%s] Forbidden\n", cp.name)
+        res.Status = player.FORBIDDEN
+      }
     }
   }
-  return player.PUT
+  return res
 }

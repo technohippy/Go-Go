@@ -45,3 +45,7 @@ func (h *History)Pass(color cell.Cell) {
 func (h *History)Last() Record {
   return h.history.Last().(Record)
 }
+
+func (h *History)IsLastPass() bool {
+  return h.history.Last().(Record).x == -1
+}

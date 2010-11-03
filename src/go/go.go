@@ -4,6 +4,7 @@ import (
   "os"
   "fmt"
   "flag"
+  "./match"
   "./board"
   "./player"
   "./server"
@@ -11,33 +12,41 @@ import (
   //"./auto_player"
 )
 
-func startConsole(b *board.Board, ps [2]player.Player) {
+func startConsole(b *board.Board) {
+  players := [2]player.Player{
+    console_player.New("ando", player.SENTE),
+    console_player.New("yasushi", player.GOTE)}
+  m := match.New(b, players)
+
   fmt.Printf("%v", b)
-  turn := 0
-  pass := false
   for {
-    switch ps[turn].Next(b) {
+    matchStatus, playerStatus := m.Next()
+    switch playerStatus {
       case player.PUT:
         fmt.Printf("%v", b)
-        pass = false
+      case player.KO:
+        fmt.Printf("Ko", b)
+      case player.FORBIDDEN:
+        fmt.Printf("Forbidden", b)
       case player.PASS:
-        if pass {
+        if matchStatus == match.FINISH {
           fmt.Println("Finish!")
           os.Exit(0)
-        } else {
-          pass = true
         }
       case player.GIVEUP:
-        fmt.Printf("%s Win!\n", ps[turn].Name())
+        fmt.Printf("%s Win!\n", (*m.Winner).Name())
         os.Exit(0)
     }
-    turn++
-    turn %= 2
   }
 }
 
-func startServer(port int, b *board.Board, ps [2]player.Player) {
-  s := server.New(b, ps)
+func startServer(port int, b *board.Board) {
+  players := [2]player.Player{
+    //http_player.New("ando", player.SENTE),
+    //http_player.New("yasushi", player.GOTE)}
+    console_player.New("ando", player.SENTE),
+    console_player.New("yasushi", player.GOTE)}
+  s := server.New(b, players)
   s.Start(port)
 }
 
@@ -55,16 +64,8 @@ func main() {
   }
 
   if *server {
-    players := [2]player.Player{
-      //http_player.New("ando", player.SENTE),
-      //http_player.New("yasushi", player.GOTE)}
-      console_player.New("ando", player.SENTE),
-      console_player.New("yasushi", player.GOTE)}
-    startServer(*port, b, players)
+    startServer(*port, b)
   } else {
-    players := [2]player.Player{
-      console_player.New("ando", player.SENTE),
-      console_player.New("yasushi", player.GOTE)}
-    startConsole(b, players)
+    startConsole(b)
   }
 }
