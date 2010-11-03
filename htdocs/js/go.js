@@ -1,4 +1,4 @@
-function coord(n) { return 15 + n *30 }
+function coord(n) { return 15 + n * 30 }
 
 function drawBoard(id) {
   var canvas = document.getElementById(id);
@@ -46,12 +46,12 @@ function putPiece(id, color, x, y) {
 
 $(document).ready(function() {
   drawBoard('board');
-  //putPiece('board', 'black', 0, 0);
-  //putPiece('board', 'white', 4, 3);
 
   $('#board').click(function(evt) {
-    var x = Math.floor((evt.pageX - 30.0) / 30.0);
-    var y = Math.floor((evt.pageY - 30.0) / 30.0);
+    //var x = Math.round((evt.pageX - 30.0) / 30.0);
+    //var y = Math.round((evt.pageY - 30.0) / 30.0);
+    var x = Math.round((evt.pageX - 35.0) / 30.0);
+    var y = Math.round((evt.pageY - 35.0) / 30.0);
     $.ajax({
       type: 'POST',
       url: '/put',
@@ -64,12 +64,8 @@ $(document).ready(function() {
         for (var i = 0; i < data.size; i++) {
           for (var j = 0; j < data.size; j++) {
             var cell = data.board[i][j];
-            if (cell == '@') {
-              putPiece('board', 'black', j, i);
-            }
-            else if (cell == 'O') {
-              putPiece('board', 'white', j, i);
-            }
+            if      (cell == '@')  putPiece('board', 'black', j, i);
+            else if (cell == 'O')  putPiece('board', 'white', j, i);
           }
         }
       }

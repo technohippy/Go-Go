@@ -1,6 +1,6 @@
 include $(GOROOT)/src/Make.inc
 
-TARG=go-go
+TARG=go
 GOFILES=src/go/go.go
 O_FILES=point.$O cell.$O history.$O board.$O player.$O console_player.$O auto_player.$O server.$O go.$O
 

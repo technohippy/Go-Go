@@ -1,4 +1,6 @@
 #board {
+  margin: 0;
+  padding: 0;
   border: 3px solid black;
   background-color: #F93;
   position: absolute;
