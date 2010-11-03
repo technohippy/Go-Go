@@ -1,7 +1,7 @@
 package match
 
 import (
-  "fmt"
+  //"fmt"
   "container/vector"
   "./cell"
   "./board"
@@ -42,7 +42,7 @@ func (m *Match)Next() (Status, player.Status) {
   var status Status
   switch resp.Status {
     case player.PUT:
-      fmt.Printf("%v\n", resp.Data)
+      //fmt.Printf("%v\n", resp.Data)
       taken := resp.Data["taken"].(vector.Vector)
       m.history.Add(color, resp.Data["x"].(int), resp.Data["y"].(int), taken)
       m.agehama[m.turn] += len(taken)

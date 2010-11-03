@@ -33,7 +33,7 @@ func (cp *ConsolePlayer)Next(b *board.Board, h *history.History, agehama [2]int)
   res := new(player.Response)
 
   r := bufio.NewReader(os.Stdin)
-  re := regexp.MustCompile("[0-9]+")
+  numberRe := regexp.MustCompile("[0-9]+")
   var color cell.Cell
   if cp.teban == player.SENTE {
     color = cell.BLACK
@@ -44,11 +44,20 @@ func (cp *ConsolePlayer)Next(b *board.Board, h *history.History, agehama [2]int)
   for {
     fmt.Printf("[%s] x, y > ", cp.name)
     in, _ := r.ReadString('\n')
-    xy := re.FindAllString(in, 2)
-    if len(xy) < 2 {
+    if in == "pass\n" {
       b.Pass(color)
       fmt.Printf("[%s] Pass!\n", cp.name)
       res.Status = player.PASS
+      return res
+    } else if in == "giveup\n" {
+      res.Status = player.GIVEUP
+      return res
+    }
+
+    xy := numberRe.FindAllString(in, 2)
+    if len(xy) < 2 {
+      b.Pass(color)
+      fmt.Printf("[%s] Input again!\n", cp.name)
     } else {
       x, _ := strconv.Atoi(xy[0])
       y, _ := strconv.Atoi(xy[1])
