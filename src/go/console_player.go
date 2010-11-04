@@ -1,3 +1,4 @@
+// This package implements a user interface for console.
 package console_player
 
 import (
@@ -10,23 +11,28 @@ import (
   "./match"
 )
 
+// Console UI.
 type ConsolePlayer struct {
   name string
   teban match.Teban
 }
 
+// New returns a user interface for console.
 func New(n string, t match.Teban) *ConsolePlayer {
   return &ConsolePlayer{n, t}
 }
 
+// Name returns a name of a player.
 func (cp *ConsolePlayer)Name() string {
   return cp.name
 }
 
+// Name returns a teban of a player.
 func (cp *ConsolePlayer)Teban() match.Teban {
   return cp.teban
 }
 
+// Next will decide the next play.
 func (cp *ConsolePlayer)Next(m *match.Match) *match.Response {
   r := bufio.NewReader(os.Stdin)
   numberRe := regexp.MustCompile("[0-9]+")

@@ -1,3 +1,4 @@
+// This package implements a history of a Go game.
 package history
 
 import (
@@ -6,6 +7,7 @@ import (
   "./point"
 )
 
+// A history consists of records.
 type Record struct {
   color cell.Cell
   x int
@@ -13,6 +15,7 @@ type Record struct {
   takenPoints vector.Vector
 }
 
+// A history of a Go game.
 type History struct {
   history vector.Vector
 }
@@ -33,6 +36,7 @@ func (h *History)IsKou(color cell.Cell, x int, y int) bool {
   }
   return false
 }
+
 func (h *History)Add(color cell.Cell, x int, y int, takenPoints vector.Vector) {
   record := Record{color, x, y, takenPoints}
   h.history.Push(record)

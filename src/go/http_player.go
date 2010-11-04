@@ -1,3 +1,4 @@
+// This package implements a user interface for web.
 package http_player
 
 import (
@@ -6,6 +7,7 @@ import (
   "./match"
 )
 
+// Web UI
 type HttpPlayer struct {
   name string
   teban match.Teban
@@ -13,18 +15,22 @@ type HttpPlayer struct {
   y int
 }
 
+// New returns a user interface for web.
 func New(n string, t match.Teban) *HttpPlayer {
   return &HttpPlayer{n, t, 0, 0}
 }
 
+// Name returns a name of a player.
 func (hp *HttpPlayer)Name() string {
   return hp.name
 }
 
+// Name returns a teban of a player.
 func (hp *HttpPlayer)Teban() match.Teban {
   return hp.teban
 }
 
+// Next will decide the next play.
 func (hp *HttpPlayer)Next(m *match.Match) *match.Response {
   color := hp.teban.Color()
   takenOffs, ok := m.Board.PutAt(color, hp.x, hp.y, m.History)
@@ -41,6 +47,7 @@ func (hp *HttpPlayer)Next(m *match.Match) *match.Response {
   return nil // never reached
 }
 
+// SetNext will set a next play.
 func (hp *HttpPlayer)SetNext(x int, y int) {
   hp.x = x
   hp.y = y

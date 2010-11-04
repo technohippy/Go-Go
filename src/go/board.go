@@ -1,8 +1,4 @@
-/*
-This package implemnets a Go board. The move on a Go board is ristricted by Go rules.
-
-Ref. http://en.wikipedia.org/wiki/Go_(game)
-*/
+// This package implemnets a Go board. The move on a Go board is ristricted by Go rules.
 package board
 
 import (
@@ -27,13 +23,13 @@ const (
   FORBIDDEN PutResponse = 3
 )
 
-// Go board
+// Go board.
 type Board struct {
   board [][]cell.Cell
   size int
 }
 
-// New returns a Go board having given grid size.
+// New returns a Go board with given grid size.
 func New(size int) *Board {
   b := new(Board)
   b.size = size
@@ -101,16 +97,19 @@ func (b *Board)PutAt(c cell.Cell, x int, y int, h *history.History) (vector.Vect
   return takenOffs, OK
 }
 
+// TakeAt will remove a piece at a given point.
 func (b *Board)TakeAt(x int, y int) cell.Cell {
   c := b.At(x, y)
   b.putAt(cell.SPACE, x, y)
   return c
 }
 
+// putAt will set a given piece at a given point.
 func (b *Board)putAt(c cell.Cell, x int, y int) {
   b.board[y][x] = c
 }
 
+// createCheckTable returns the same size of a table as the game board.
 func (b *Board)createCheckTable() [][]int {
   checked := make([][]int, b.size+2)
   for i := 0; i <= b.size+1; i++ {
@@ -122,11 +121,13 @@ func (b *Board)createCheckTable() [][]int {
   return checked
 }
 
+// shouldTakeOff checks if a piece at a given point should be removed from the board.
 func (b *Board)shouldTakeOff(x int, y int, c cell.Cell) bool {
   if b.At(x, y) != c { return false }
   return b.isTangentToSpace(x, y, c, b.createCheckTable())
 }
 
+// isTangentToSpace checks if a piece at a given point is tangent to any blank cell.
 func (b *Board)isTangentToSpace(x int, y int, c cell.Cell, checked [][]int) bool {
   if checked[y][x-1] == 0 {
     checked[y][x-1] = 1
@@ -171,6 +172,7 @@ func (b *Board)isTangentToSpace(x int, y int, c cell.Cell, checked [][]int) bool
   return true
 }
 
+// takeOff will remove a group of cells at a given point.
 func (b *Board)takeOff(x int, y int, c cell.Cell, takenOffs *vector.Vector) {
   if b.At(x, y) == c {
     b.TakeAt(x, y)
@@ -217,6 +219,7 @@ func (b *Board)Load(filepath string) {
   }
 }
 
+// String returns a string replesenting a board.
 func (b *Board)String() string {
   ret := "     ["
   for i := 1; i <= b.size; i++ {
@@ -233,6 +236,7 @@ func (b *Board)String() string {
   return ret
 }
 
+// String returns a json replesenting a board.
 func (b *Board)Json() string {
   ret := fmt.Sprintf("{'size':%d, 'board':[", b.size)
   for y := 0; y < b.size; y++ {

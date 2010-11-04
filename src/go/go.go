@@ -1,3 +1,4 @@
+// Ref. http://en.wikipedia.org/wiki/Go_(game)
 package main
 
 import (
@@ -12,6 +13,7 @@ import (
   //"./auto_player"
 )
 
+// startConsole will start a console for a Go game.
 func startConsole(b *board.Board) {
   players := [2]match.Player{
     console_player.New("ando", match.SENTE),
@@ -40,6 +42,7 @@ func startConsole(b *board.Board) {
   }
 }
 
+// startConsole will start a server for a Go game.
 func startServer(port int, b *board.Board) {
   players := [2]match.Player{
     http_player.New("ando", match.SENTE),
@@ -48,6 +51,7 @@ func startServer(port int, b *board.Board) {
   s.Start(port)
 }
 
+// main
 func main() {
   server := flag.Bool("server", false, "run server or not")
   port := flag.Int("port", 55555, "port number")

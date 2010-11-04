@@ -1,3 +1,5 @@
+// This package implements a web server for Go games.
+// Note that games are volatile.
 package server
 
 import (
@@ -14,25 +16,32 @@ import (
   "./http_player"
 )
 
+// Directory path for template files.
 const (
   template_dir = "templates"
 )
 
+// Web server for a Go game.
 type Server struct {
   matches *vector.Vector
 }
 
+// New returns a server for Go games.
 func New(b *board.Board, ps [2]match.Player) *Server {
   ms := new(vector.Vector)
   ms.Push(match.New(b, ps))
   return &Server{ms}
 }
 
+// currentMatch returns the recent match.
 func (s *Server)currentMatch() *match.Match {
   return s.matches.Last().(*match.Match)
 }
 
+// Cache for templates.
 var templates = make(map[string]*template.Template)
+
+// getTemplate returns a template at a given filepath.
 func getTemplate(filepath string) *template.Template {
   if templates[filepath] == nil {
     file, err := os.Open(fmt.Sprintf("%s/%s", template_dir, filepath), os.O_RDONLY, 0666)
@@ -45,6 +54,7 @@ func getTemplate(filepath string) *template.Template {
   return templates[filepath]
 }
 
+// Start will start service.
 func (s *Server)Start(port int) {
   http.HandleFunc("/", http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
     log.Println("access /")
@@ -86,6 +96,9 @@ func (s *Server)Start(port int) {
   http.HandleFunc("/get", http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
     //log.Println("access /get")
     m := s.currentMatch()
+    if p, ok := m.CurrentPlayer().(*http_player.HttpPlayer); !ok {
+      p.Next(m)
+    }
     fmt.Fprint(rw, m.Json())
   }))
 
