@@ -1,3 +1,7 @@
+body {
+  background-color: #FFF;
+}
+
 #board {
   margin: 0;
   padding: 0;
@@ -6,4 +10,11 @@
   position: absolute;
   top: 15px;
   left: 15px;
+}
+
+#console {
+  position: absolute;
+  top: 600px;
+  left: 15px;
+  background-color: #FFF;
 }

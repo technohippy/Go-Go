@@ -31,13 +31,11 @@ const (
 type Board struct {
   board [][]cell.Cell
   size int
-  history *history.History
 }
 
 // New returns a Go board having given grid size.
 func New(size int) *Board {
   b := new(Board)
-  b.history = history.New()
   b.size = size
   b.board = make([][]cell.Cell, size+2)
   for y := 0; y < size+2; y++ {
@@ -75,7 +73,7 @@ func (b *Board)charAt(x int, y int) byte {
 }
 
 // PutAt will put a give piece at the given position and return removed pieces and the response code.
-func (b *Board)PutAt(c cell.Cell, x int, y int) (vector.Vector, PutResponse) {
+func (b *Board)PutAt(c cell.Cell, x int, y int, h *history.History) (vector.Vector, PutResponse) {
   if b.At(x, y) != cell.SPACE {
     return nil, OCCUPIED
   }
@@ -93,14 +91,12 @@ func (b *Board)PutAt(c cell.Cell, x int, y int) (vector.Vector, PutResponse) {
     return nil, FORBIDDEN
   }
 
-  if len(takenOffs) == 1 && b.history.IsKou(c, x, y) {
+  if len(takenOffs) == 1 && h.IsKou(c, x, y) {
     b.putAt(cell.SPACE, x, y)
     taken := takenOffs.Last().(point.Point)
     b.putAt(c.Reverse(), taken.X(), taken.Y())
     return nil, KO
   }
-
-  b.history.Add(c, x, y, takenOffs)
 
   return takenOffs, OK
 }
@@ -115,15 +111,11 @@ func (b *Board)putAt(c cell.Cell, x int, y int) {
   b.board[y][x] = c
 }
 
-func (b *Board)Pass(c cell.Cell) {
-  b.history.Pass(c)
-}
-
 func (b *Board)createCheckTable() [][]int {
   checked := make([][]int, b.size+2)
   for i := 0; i <= b.size+1; i++ {
     checked[i] = make([]int, b.size+2)
-    for j := 0; j <= b.size+1; j++ {
+    for j := 1; j <= b.size+1; j++ {
       checked[i][j] = 0
     }
   }
@@ -242,7 +234,7 @@ func (b *Board)String() string {
 }
 
 func (b *Board)Json() string {
-  ret := fmt.Sprintf("({'size':%d, 'board':[", b.size)
+  ret := fmt.Sprintf("{'size':%d, 'board':[", b.size)
   for y := 0; y < b.size; y++ {
     ret = fmt.Sprintf("%s[", ret)
     for x := 0; x < b.size; x++ {
@@ -250,6 +242,6 @@ func (b *Board)Json() string {
     }
     ret = fmt.Sprintf("%s],", ret)
   }
-  ret = fmt.Sprintf("%s]})", ret)
+  ret = fmt.Sprintf("%s]}", ret)
   return ret
 }

@@ -1,3 +1,5 @@
+var version = -1;
+
 function coord(n) { return 15 + n * 30 }
 
 function drawBoard(id) {
@@ -44,6 +46,61 @@ function putPiece(id, color, x, y) {
   ctx.closePath();
 }
 
+function drawConsole(id, turn, agehama) {
+  function drawCircle(ctx, lineColor, fillColor, x, y) {
+    ctx.beginPath();
+    ctx.lineWidth = 5;
+    ctx.lineColor = lineColor;
+    ctx.fillStyle = fillColor;
+    ctx.arc(x, y, 25, 0, 2*Math.PI, true);
+    ctx.fill();
+    ctx.stroke();
+    ctx.closePath();
+  }
+
+  var canvas = document.getElementById(id);
+  var ctx = canvas.getContext('2d');
+  ctx.font = "50px 'ＭＳ Ｐゴシック'";
+
+  ctx.fillStyle = '#FFF';
+  ctx.fillRect(0, 0, 570, 50);
+
+  drawCircle(ctx, turn==0?"#F00":"#000", "#000", 70, 35);
+  ctx.strokeText('' + agehama[0], 120, 55, 100);
+  drawCircle(ctx, turn==1?"#F00":"#000", "#FFF", 370, 35);
+  ctx.strokeText('' + agehama[1], 420, 55, 100);
+}
+
+function drawMatch(data) {
+  var board = data.board;
+  drawBoard('board');
+
+  for (var i = 0; i < board.size; i++) {
+    for (var j = 0; j < board.size; j++) {
+      var cell = board.board[i][j];
+      if      (cell == '@')  putPiece('board', 'black', j, i);
+      else if (cell == 'O')  putPiece('board', 'white', j, i);
+    }
+  }
+
+  drawConsole('console', data.turn, data.agehama);
+}
+
+function draw() {
+  $.ajax({
+    type: 'POST',
+    url: '/get',
+    cache: false,
+    success: function(json) {
+      var data = eval(json);
+      if (data.version <= version) return;
+      version = data.version;
+      drawMatch(data);
+      setTimeout(draw, 1000);
+    }
+  });
+}
+
 $(document).ready(function() {
   drawBoard('board');
 
@@ -56,19 +113,15 @@ $(document).ready(function() {
       type: 'POST',
       url: '/put',
       data: {x:(x+1), y:(y+1)},
-      //dataType: 'json',
       cache: false,
-      success: function(dt) {
-        var data = eval(dt);
-        drawBoard('board');
-        for (var i = 0; i < data.size; i++) {
-          for (var j = 0; j < data.size; j++) {
-            var cell = data.board[i][j];
-            if      (cell == '@')  putPiece('board', 'black', j, i);
-            else if (cell == 'O')  putPiece('board', 'white', j, i);
-          }
-        }
+      success: function(json) {
+        var data = eval(json);
+        if (data.version <= version) return;
+        version = data.version;
+        drawMatch(data);
       }
     });
   });
+
+  draw();
 });

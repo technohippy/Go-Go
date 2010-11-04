@@ -6,34 +6,34 @@ import (
   "flag"
   "./match"
   "./board"
-  "./player"
   "./server"
   "./console_player"
+  "./http_player"
   //"./auto_player"
 )
 
 func startConsole(b *board.Board) {
-  players := [2]player.Player{
-    console_player.New("ando", player.SENTE),
-    console_player.New("yasushi", player.GOTE)}
+  players := [2]match.Player{
+    console_player.New("ando", match.SENTE),
+    console_player.New("yasushi", match.GOTE)}
   m := match.New(b, players)
 
   fmt.Printf("%v", b)
   for {
-    matchStatus, playerStatus := m.Next()
-    switch playerStatus {
-      case player.PUT:
+    matchStatus, playerResponse := m.Next()
+    switch playerResponse.Type {
+      case match.PUT:
         fmt.Printf("%v", b)
-      case player.KO:
+      case match.KO:
         fmt.Printf("Ko", b)
-      case player.FORBIDDEN:
+      case match.FORBIDDEN:
         fmt.Printf("Forbidden", b)
-      case player.PASS:
+      case match.PASS:
         if matchStatus == match.FINISH {
           fmt.Println("Finish!")
           os.Exit(0)
         }
-      case player.GIVEUP:
+      case match.GIVEUP:
         fmt.Printf("%s Win!\n", (*m.Winner).Name())
         os.Exit(0)
     }
@@ -41,11 +41,9 @@ func startConsole(b *board.Board) {
 }
 
 func startServer(port int, b *board.Board) {
-  players := [2]player.Player{
-    //http_player.New("ando", player.SENTE),
-    //http_player.New("yasushi", player.GOTE)}
-    console_player.New("ando", player.SENTE),
-    console_player.New("yasushi", player.GOTE)}
+  players := [2]match.Player{
+    http_player.New("ando", match.SENTE),
+    http_player.New("yasushi", match.GOTE)}
   s := server.New(b, players)
   s.Start(port)
 }

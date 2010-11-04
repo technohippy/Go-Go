@@ -3,6 +3,7 @@ package player
 import (
   "./board"
   "./history"
+  "./match"
 )
 
 type Status int
@@ -25,9 +26,9 @@ const (
   GOTE Teban = 1
 )
 
-
 type Player interface {
   Name() string
   Teban() Teban
   Next(b *board.Board, h *history.History, agehama [2]int) *Response
+  Next2(m *match.Match) *Response
 }

@@ -49,3 +49,7 @@ func (h *History)Last() Record {
 func (h *History)IsLastPass() bool {
   return 0 < len(h.history) && h.history.Last().(Record).x == -1
 }
+
+func (h *History)Size() int {
+  return len(h.history)
+}

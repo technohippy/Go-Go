@@ -1,13 +1,51 @@
 package match
 
 import (
-  //"fmt"
+  "fmt"
   "container/vector"
   "./cell"
   "./board"
-  "./player"
   "./history"
 )
+
+type ResponseType int
+const (
+  PUT ResponseType = 1
+  PASS ResponseType = 2
+  GIVEUP ResponseType = 3
+  KO ResponseType = 4
+  FORBIDDEN ResponseType = 5
+)
+
+type Response struct {
+  Type ResponseType
+  Data map[string]interface{}
+}
+func NewPutResponse(x int, y int, v vector.Vector) *Response {
+  return &Response{PUT, map[string]interface{}{"x":x, "y":y, "taken":v}}
+}
+func NewPassResponse() *Response { return &Response{PASS, nil} }
+func NewGiveupResponse() *Response { return &Response{GIVEUP, nil} }
+func NewKoResponse() *Response { return &Response{KO, nil} }
+func NewForbiddenResponse() *Response { return &Response{FORBIDDEN, nil} }
+
+type Teban int
+const (
+  SENTE Teban = 0
+  GOTE Teban = 1
+)
+func (t Teban)Color() cell.Cell {
+  if t == SENTE {
+    return cell.BLACK
+  }
+  return cell.WHITE
+}
+
+type Player interface {
+  Name() string
+  Teban() Teban
+  Next(m *Match) *Response
+}
 
 type Status int
 const (
@@ -16,51 +54,59 @@ const (
 )
 
 type Match struct {
-  turn int
-  board *board.Board
-  history *history.History
-  players [2]player.Player
-  agehama [2]int
-  Winner *player.Player
+  Turn int
+  Board *board.Board
+  History *history.History
+  Players [2]Player
+  Agehama [2]int
+  Winner *Player
 }
 
-func New(b *board.Board, players [2]player.Player) *Match {
+func New(b *board.Board, players [2]Player) *Match {
   match := &Match{0, b, history.New(), players, [2]int{0, 0}, nil}
   return match
 }
 
 func (m *Match)NextTurn() {
-  m.turn++
-  m.turn %= 2
+  m.Turn++
+  m.Turn %= 2
 }
 
-func (m *Match)Next() (Status, player.Status) {
-  p := m.players[m.turn]
+func (m *Match)CurrentPlayer() Player {
+  return m.Players[m.Turn]
+}
+
+func (m *Match)Next() (Status, *Response) {
+  p := m.CurrentPlayer()
   var color cell.Cell
-  if p.Teban() == player.SENTE { color = cell.BLACK } else { color = cell.WHITE }
-  resp := p.Next(m.board, m.history, m.agehama)
+  if p.Teban() == SENTE { color = cell.BLACK } else { color = cell.WHITE }
+
+  resp := p.Next(m)
   var status Status
-  switch resp.Status {
-    case player.PUT:
-      //fmt.Printf("%v\n", resp.Data)
-      taken := resp.Data["taken"].(vector.Vector)
-      m.history.Add(color, resp.Data["x"].(int), resp.Data["y"].(int), taken)
-      m.agehama[m.turn] += len(taken)
+  switch resp.Type {
+    case PUT:
+      takenPieces := resp.Data["taken"].(vector.Vector)
+      m.History.Add(color, resp.Data["x"].(int), resp.Data["y"].(int), takenPieces)
+      m.Agehama[m.Turn] += len(takenPieces)
       status = PLAYING
       m.NextTurn()
-    case player.PASS:
-      if m.history.IsLastPass() {
-        m.history.Pass(color)
+    case PASS:
+      m.History.Pass(color)
+      if m.History.IsLastPass() {
         // m.Winner = ?
         status = FINISH
       } else {
-        m.history.Pass(color)
         status = PLAYING
         m.NextTurn()
       }
-    case player.GIVEUP:
-      m.Winner = &m.players[(m.turn+1)%2]
+    case GIVEUP:
+      m.Winner = &m.Players[(m.Turn+1)%2]
       status = FINISH
   }
-  return status, resp.Status
+  return status, resp
+}
+
+func (m *Match)Json() string {
+  return fmt.Sprintf("({'board':%s, 'turn':%d, 'agehama':[%d, %d], 'version':%d})",
+    m.Board.Json(), m.Turn, m.Agehama[0], m.Agehama[1], m.History.Size())
 }
