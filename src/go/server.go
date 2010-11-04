@@ -96,8 +96,8 @@ func (s *Server)Start(port int) {
   http.HandleFunc("/get", http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
     //log.Println("access /get")
     m := s.currentMatch()
-    if p, ok := m.CurrentPlayer().(*http_player.HttpPlayer); !ok {
-      p.Next(m)
+    if _, ok := m.CurrentPlayer().(*http_player.HttpPlayer); !ok {
+      m.Next()
     }
     fmt.Fprint(rw, m.Json())
   }))

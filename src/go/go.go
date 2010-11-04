@@ -14,11 +14,17 @@ import (
 )
 
 // startConsole will start a console for a Go game.
-func startConsole(b *board.Board) {
-  players := [2]match.Player{
-    console_player.New("ando", match.SENTE),
-    //console_player.New("yasushi", match.GOTE)}
-    auto_player.New(match.GOTE)}
+func startConsole(b *board.Board, useAI bool) {
+  var players [2]match.Player
+  if useAI {
+    players = [2]match.Player{
+      console_player.New("ando", match.SENTE),
+      auto_player.New(match.GOTE)}
+  } else {
+    players = [2]match.Player{
+      console_player.New("ando", match.SENTE),
+      console_player.New("yasushi", match.GOTE)}
+  }
   m := match.New(b, players)
 
   fmt.Printf("%v", b)
@@ -44,10 +50,17 @@ func startConsole(b *board.Board) {
 }
 
 // startConsole will start a server for a Go game.
-func startServer(port int, b *board.Board) {
-  players := [2]match.Player{
-    http_player.New("ando", match.SENTE),
-    http_player.New("yasushi", match.GOTE)}
+func startServer(port int, b *board.Board, useAI bool) {
+  var players [2]match.Player
+  if useAI {
+    players = [2]match.Player{
+      http_player.New("ando", match.SENTE),
+      auto_player.New(match.GOTE)}
+  } else {
+    players = [2]match.Player{
+      http_player.New("ando", match.SENTE),
+      http_player.New("yasushi", match.GOTE)}
+  }
   s := server.New(b, players)
   s.Start(port)
 }
@@ -58,6 +71,7 @@ func main() {
   port := flag.Int("port", 55555, "port number")
   size := flag.Int("size", 19, "9, 13 or 19")
   filepath := flag.String("load", "", "load figure")
+  ai := flag.Bool("ai", false, "use AI")
   flag.Parse()
 
   b := board.New(*size)
@@ -67,8 +81,8 @@ func main() {
   }
 
   if *server {
-    startServer(*port, b)
+    startServer(*port, b, *ai)
   } else {
-    startConsole(b)
+    startConsole(b, *ai)
   }
 }

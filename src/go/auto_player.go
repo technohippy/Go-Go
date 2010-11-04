@@ -28,7 +28,6 @@ func (ap *AutoPlayer)Teban() match.Teban {
 // Next will chose a random point to put a piece.
 func (ap *AutoPlayer)Next(m *match.Match) *match.Response {
   color := ap.teban.Color()
-  fmt.Printf(">> %v\n", color)
   candidates := new(vector.Vector)
   size := m.Board.Size()
   for y := 0; y < size; y++ {
@@ -46,6 +45,7 @@ func (ap *AutoPlayer)Next(m *match.Match) *match.Response {
       p := candidates.At(int(bs[0]) % candidates.Len()).(*point.Point)
       ts, resp := m.Board.PutAt(color, p.X(), p.Y(), m.History)
       if resp == board.OK {
+        fmt.Printf("[auto] put %d,%d\n", p.X(), p.Y())
         return match.NewPutResponse(p.X(), p.Y(), ts)
       }
     }
