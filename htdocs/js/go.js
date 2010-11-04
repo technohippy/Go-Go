@@ -8,7 +8,7 @@ function drawBoard(id) {
   ctx.lineWidth = 3;
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
-  ctx.lineColor = '#000';
+  ctx.strokeStyle = '#000';
 
   ctx.fillStyle = '#F93';
   ctx.fillRect(0, 0, 570, 570);
@@ -38,7 +38,7 @@ function putPiece(id, color, x, y) {
   var canvas = document.getElementById(id);
   var ctx = canvas.getContext('2d');
   ctx.beginPath();
-  ctx.lineColor = '#000';
+  ctx.stokeStyle = '#000';
   ctx.fillStyle = color;
   ctx.arc(coord(x), coord(y), 14, 0, 2*Math.PI, true);
   ctx.fill();
@@ -50,7 +50,7 @@ function drawConsole(id, turn, agehama) {
   function drawCircle(ctx, lineColor, fillColor, x, y) {
     ctx.beginPath();
     ctx.lineWidth = 5;
-    ctx.lineColor = lineColor;
+    ctx.strokeStyle = lineColor;
     ctx.fillStyle = fillColor;
     ctx.arc(x, y, 25, 0, 2*Math.PI, true);
     ctx.fill();
@@ -66,8 +66,9 @@ function drawConsole(id, turn, agehama) {
   ctx.fillRect(0, 0, 570, 50);
 
   drawCircle(ctx, turn==0?"#F00":"#000", "#000", 70, 35);
-  ctx.strokeText('' + agehama[0], 120, 55, 100);
   drawCircle(ctx, turn==1?"#F00":"#000", "#FFF", 370, 35);
+  ctx.strokeStyle = '#000';
+  ctx.strokeText('' + agehama[0], 120, 55, 100);
   ctx.strokeText('' + agehama[1], 420, 55, 100);
 }
 
@@ -93,9 +94,10 @@ function draw() {
     cache: false,
     success: function(json) {
       var data = eval(json);
-      if (data.version <= version) return;
-      version = data.version;
-      drawMatch(data);
+      if (version < data.version) {
+        version = data.version;
+        drawMatch(data);
+      }
       setTimeout(draw, 1000);
     }
   });
@@ -116,6 +118,10 @@ $(document).ready(function() {
       cache: false,
       success: function(json) {
         var data = eval(json);
+        if (data.message) {
+          alert(data.message);
+          return;
+        }
         if (data.version <= version) return;
         version = data.version;
         drawMatch(data);

@@ -1,6 +1,3 @@
-// http://d.hatena.ne.jp/tokuhirom/20091117/1258418742
-// http://d.hatena.ne.jp/sfujiwara/20091116/1258388969
-// http://d.hatena.ne.jp/sfujiwara/20091117/1258438816
 package server
 
 import (
@@ -13,7 +10,6 @@ import (
   "template"
   "container/vector"
   "./board"
-  //"./cell"
   "./match"
   "./http_player"
 )
@@ -24,16 +20,12 @@ const (
 
 type Server struct {
   matches *vector.Vector
-  board *board.Board
-  players [2]match.Player
-  turn int
-  pass bool
 }
 
 func New(b *board.Board, ps [2]match.Player) *Server {
   ms := new(vector.Vector)
   ms.Push(match.New(b, ps))
-  return &Server{ms, b, ps, 0, false}
+  return &Server{ms}
 }
 
 func (s *Server)currentMatch() *match.Match {
@@ -55,6 +47,7 @@ func getTemplate(filepath string) *template.Template {
 
 func (s *Server)Start(port int) {
   http.HandleFunc("/", http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+    log.Println("access /")
     params := new(struct { });
     tmpl := getTemplate("index.html")
     err := tmpl.Execute(params, rw)
@@ -62,6 +55,7 @@ func (s *Server)Start(port int) {
   }))
 
   http.HandleFunc("/put", http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+    log.Println("access /put")
     req.ParseForm()
     x, _ := strconv.Atoi(req.Form["x"][0])
     y, _ := strconv.Atoi(req.Form["y"][0])
@@ -75,21 +69,22 @@ func (s *Server)Start(port int) {
       case match.PUT:
         fmt.Fprint(rw, m.Json())
       case match.KO:
-        fmt.Fprint(rw, m.Json())
+        fmt.Fprint(rw, fmt.Sprintf("({'message':'コウです'})"))
       case match.FORBIDDEN:
-        fmt.Fprint(rw, m.Json())
+        fmt.Fprint(rw, fmt.Sprintf("({'message':'着手禁止です'})"))
       case match.PASS:
         if matchStatus == match.FINISH {
-          fmt.Fprint(rw, m.Json())
+          fmt.Fprint(rw, fmt.Sprintf("({'message':'終了しました'})"))
         } else {
-          fmt.Fprint(rw, m.Json())
+          fmt.Fprint(rw, fmt.Sprintf("({'message':'パスしました'})"))
         }
       case match.GIVEUP:
-        fmt.Fprint(rw, m.Json())
+        fmt.Fprint(rw, fmt.Sprintf("({'message':'終了しました'})"))
     }
   }))
 
-  http.HandleFunc("/put", http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+  http.HandleFunc("/get", http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+    //log.Println("access /get")
     m := s.currentMatch()
     fmt.Fprint(rw, m.Json())
   }))
