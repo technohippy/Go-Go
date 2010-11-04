@@ -91,11 +91,12 @@ func (m *Match)Next() (Status, *Response) {
       status = PLAYING
       m.NextTurn()
     case PASS:
-      m.History.Pass(color)
       if m.History.IsLastPass() {
+        m.History.Pass(color)
         // m.Winner = ?
         status = FINISH
       } else {
+        m.History.Pass(color)
         status = PLAYING
         m.NextTurn()
       }

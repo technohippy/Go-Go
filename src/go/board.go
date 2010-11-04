@@ -63,9 +63,32 @@ func (b *Board)At(x int, y int) cell.Cell {
   return b.board[y][x]
 }
 
+// Size returns a size of a board.
+func (b *Board)Size() int {
+  return b.size
+}
+
 // charAt returns a character for a piece at the given position.
 func (b *Board)charAt(x int, y int) byte {
   return map[cell.Cell]byte{cell.SPACE:'+', cell.BLACK:'@', cell.WHITE:'O'}[b.At(x, y)]
+}
+
+// CanPutAt returns if a given cell can put at a given position.
+func (b *Board)CanPutAt(c cell.Cell, x int, y int, h *history.History) bool {
+  if b.At(x, y) != cell.SPACE {
+    return false
+  }
+
+  b.putAt(c, x, y)
+  if b.shouldTakeOff(x, y, c) {
+    b.TakeAt(x, y)
+    return false
+  }
+  b.TakeAt(x, y)
+
+  // TODO: check Ko
+
+  return true
 }
 
 // PutAt will put a give piece at the given position and return removed pieces and the response code.
@@ -83,7 +106,7 @@ func (b *Board)PutAt(c cell.Cell, x int, y int, h *history.History) (vector.Vect
   if b.shouldTakeOff(x, y+1, rc) { b.takeOff(x, y+1, rc, &takenOffs) }
 
   if b.shouldTakeOff(x, y, c) {
-    b.putAt(cell.SPACE, x, y)
+    b.TakeAt(x, y)
     return nil, FORBIDDEN
   }
 

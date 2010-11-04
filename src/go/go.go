@@ -10,15 +10,15 @@ import (
   "./server"
   "./console_player"
   "./http_player"
-  //"./auto_player"
+  "./auto_player"
 )
 
 // startConsole will start a console for a Go game.
 func startConsole(b *board.Board) {
   players := [2]match.Player{
     console_player.New("ando", match.SENTE),
-    console_player.New("yasushi", match.GOTE)}
-    //auto_player.New(match.GOTE)}
+    //console_player.New("yasushi", match.GOTE)}
+    auto_player.New(match.GOTE)}
   m := match.New(b, players)
 
   fmt.Printf("%v", b)
