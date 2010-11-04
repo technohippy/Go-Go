@@ -1,15 +1,14 @@
 package auto_player
 
 import (
-  "./board"
-  "./player"
+  "./match"
 )
 
 type AutoPlayer struct {
-  teban player.Teban
+  teban match.Teban
 }
 
-func New(t player.Teban) *AutoPlayer {
+func New(t match.Teban) *AutoPlayer {
   return &AutoPlayer{}
 }
 
@@ -17,18 +16,14 @@ func (cp *AutoPlayer)Name() string {
   return "auto"
 }
 
-func (cp *AutoPlayer)Teban() player.Teban {
+func (cp *AutoPlayer)Teban() match.Teban {
   return cp.teban
 }
 
-func (cp *ConsolePlayer)SetTeban(t player.Teban) {
+func (cp *AutoPlayer)SetTeban(t match.Teban) {
   cp.teban = t
 }
 
-func (cp *AutoPlayer)Next(b *board.Board) player.Status {
-  return player.GIVEUP
-}
-
-func (cp *AutoPlayer)Next2(b *board.Board, h *history.History, agehama [2]int) Status {
-  return cp.Next(b)
+func (cp *AutoPlayer)Next(m *match.Match) *match.Response {
+  return match.NewGiveupResponse()
 }

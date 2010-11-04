@@ -18,6 +18,7 @@ func startConsole(b *board.Board) {
   players := [2]match.Player{
     console_player.New("ando", match.SENTE),
     console_player.New("yasushi", match.GOTE)}
+    //auto_player.New(match.GOTE)}
   m := match.New(b, players)
 
   fmt.Printf("%v", b)
