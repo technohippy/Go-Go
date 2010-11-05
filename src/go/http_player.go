@@ -7,7 +7,7 @@ import (
   "./match"
 )
 
-// Web UI
+// Web UI.
 type HttpPlayer struct {
   name string
   teban match.Teban
@@ -25,7 +25,7 @@ func (hp *HttpPlayer)Name() string {
   return hp.name
 }
 
-// Name returns a teban of a player.
+// Teban returns a teban of a player.
 func (hp *HttpPlayer)Teban() match.Teban {
   return hp.teban
 }

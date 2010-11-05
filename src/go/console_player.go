@@ -27,7 +27,7 @@ func (cp *ConsolePlayer)Name() string {
   return cp.name
 }
 
-// Name returns a teban of a player.
+// Teban returns a teban of a player.
 func (cp *ConsolePlayer)Teban() match.Teban {
   return cp.teban
 }

@@ -20,11 +20,13 @@ type History struct {
   history vector.Vector
 }
 
+// New returns a history of a Go game.
 func New() *History {
   return &History{vector.Vector{}}
 }
 
-func (h *History)IsKou(color cell.Cell, x int, y int) bool {
+// IsKo checks whether a given cell is ko or not.
+func (h *History)IsKo(color cell.Cell, x int, y int) bool {
   if len(h.history) == 0 { return false }
 
   last := h.Last()
@@ -37,23 +39,28 @@ func (h *History)IsKou(color cell.Cell, x int, y int) bool {
   return false
 }
 
+// Add will add a record to the history.
 func (h *History)Add(color cell.Cell, x int, y int, takenPoints vector.Vector) {
   record := Record{color, x, y, takenPoints}
   h.history.Push(record)
 }
 
+// Add will add a record to history.
 func (h *History)Pass(color cell.Cell) {
   h.Add(color, -1, -1, nil)
 }
 
+// Last returns the last record in history.
 func (h *History)Last() Record {
   return h.history.Last().(Record)
 }
 
+// IsLastPass checks whether the last record is pass or not.
 func (h *History)IsLastPass() bool {
   return 0 < len(h.history) && h.history.Last().(Record).x == -1
 }
 
+// Size returns the size of history.
 func (h *History)Size() int {
   return len(h.history)
 }

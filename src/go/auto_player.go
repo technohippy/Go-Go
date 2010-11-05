@@ -1,3 +1,4 @@
+// This package implements an AI for a Go game.
 package auto_player
 
 import (
@@ -9,18 +10,22 @@ import (
   "./match"
 )
 
+// AI for a Go game.
 type AutoPlayer struct {
   teban match.Teban
 }
 
+// New returns an AI for a Go game.
 func New(t match.Teban) *AutoPlayer {
   return &AutoPlayer{t}
 }
 
+// Name returns a name of a player. (Now "auto" is returned.)
 func (ap *AutoPlayer)Name() string {
   return "auto"
 }
 
+// Teban returns a teban of a player.
 func (ap *AutoPlayer)Teban() match.Teban {
   return ap.teban
 }

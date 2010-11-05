@@ -110,7 +110,7 @@ func (b *Board)PutAt(c cell.Cell, x int, y int, h *history.History) (vector.Vect
     return nil, FORBIDDEN
   }
 
-  if len(takenOffs) == 1 && h.IsKou(c, x, y) {
+  if len(takenOffs) == 1 && h.IsKo(c, x, y) {
     b.putAt(cell.SPACE, x, y)
     taken := takenOffs.Last().(point.Point)
     b.putAt(c.Reverse(), taken.X(), taken.Y())
