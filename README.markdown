@@ -3,6 +3,8 @@ Go-Go
 
 Go-Go is a Go game server written in Golang.
 
+![Go image](http://img.f.hatena.ne.jp/images/fotolife/t/technohippy/20101105/20101105035339.png)
+
 What is Go?
 -----------
 
