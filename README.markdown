@@ -1,7 +1,7 @@
 Go-Go
 =====
 
-Go-Go is a Go game server writtern in Golang.
+Go-Go is a Go game server written in Golang.
 
 What is Go?
 -----------
