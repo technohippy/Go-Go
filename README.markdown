@@ -28,4 +28,4 @@ How to use
 Note
 ----
 
-Current AI is not intelligent at all. Play with your friend.
+Current AI is not intelligent at all. Please play with your friend.
