@@ -18,7 +18,7 @@ import (
 
 // Directory path for template files.
 const (
-  template_dir = "templates"
+  template_dir = "templates/"
 )
 
 // Web server for a Go game.
@@ -44,7 +44,7 @@ var templates = make(map[string]*template.Template)
 // getTemplate returns a template at a given filepath.
 func getTemplate(filepath string) *template.Template {
   if templates[filepath] == nil {
-    file, err := os.Open(fmt.Sprintf("%s/%s", template_dir, filepath), os.O_RDONLY, 0666)
+    file, err := os.Open(template_dir+filepath, os.O_RDONLY, 0666)
     if err != nil { log.Exit("not exist: %s", filepath) }
     reader := bufio.NewReader(file)
     body, _ := reader.ReadString('~')
@@ -79,17 +79,17 @@ func (s *Server)Start(port int) {
       case match.PUT:
         fmt.Fprint(rw, m.Json())
       case match.KO:
-        fmt.Fprint(rw, fmt.Sprintf("({'message':'コウです'})"))
+        fmt.Fprint(rw, "({'message':'コウです'})")
       case match.FORBIDDEN:
-        fmt.Fprint(rw, fmt.Sprintf("({'message':'着手禁止です'})"))
+        fmt.Fprint(rw, "({'message':'着手禁止です'})")
       case match.PASS:
         if matchStatus == match.FINISH {
-          fmt.Fprint(rw, fmt.Sprintf("({'message':'終了しました'})"))
+          fmt.Fprint(rw, "({'message':'終了しました'})")
         } else {
-          fmt.Fprint(rw, fmt.Sprintf("({'message':'パスしました'})"))
+          fmt.Fprint(rw, "({'message':'パスしました'})")
         }
       case match.GIVEUP:
-        fmt.Fprint(rw, fmt.Sprintf("({'message':'終了しました'})"))
+        fmt.Fprint(rw, "({'message':'終了しました'})")
     }
   }))
 

@@ -69,8 +69,8 @@ func (b *Board)Size() int {
 }
 
 // charAt returns a character for a piece at the given position.
-func (b *Board)charAt(x int, y int) byte {
-  return map[cell.Cell]byte{cell.SPACE:'+', cell.BLACK:'@', cell.WHITE:'O'}[b.At(x, y)]
+func (b *Board)charAt(x int, y int) string {
+  return map[cell.Cell]string{cell.SPACE:"+", cell.BLACK:"@", cell.WHITE:"O"}[b.At(x, y)]
 }
 
 // CanPutAt returns if a given cell can put at a given position.
@@ -248,13 +248,13 @@ func (b *Board)String() string {
   for i := 1; i <= b.size; i++ {
     ret = fmt.Sprintf("%s%2d", ret, i)
   }
-  ret = fmt.Sprintf("%s]\n", ret)
+  ret += "]\n"
   for y := 0; y < b.size; y++ {
     ret = fmt.Sprintf("%s[%2d]  ", ret, y+1)
     for x := 0; x < b.size; x++ {
-      ret = fmt.Sprintf("%s %c", ret, b.charAt(x+1, y+1))
+      ret += " " + b.charAt(x+1, y+1)
     }
-    ret = fmt.Sprintf("%s\n", ret)
+    ret += "\n"
   }
   return ret
 }
@@ -263,12 +263,12 @@ func (b *Board)String() string {
 func (b *Board)Json() string {
   ret := fmt.Sprintf("{'size':%d, 'board':[", b.size)
   for y := 0; y < b.size; y++ {
-    ret = fmt.Sprintf("%s[", ret)
+    ret += "["
     for x := 0; x < b.size; x++ {
-      ret = fmt.Sprintf("%s'%c',", ret, b.charAt(x+1, y+1))
+      ret += "'" + b.charAt(x+1, y+1) + "',"
     }
-    ret = fmt.Sprintf("%s],", ret)
+    ret += "],"
   }
-  ret = fmt.Sprintf("%s]}", ret)
+  ret += "]}"
   return ret
 }
