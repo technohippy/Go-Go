@@ -24,3 +24,8 @@ How to use
       -ai=false: use AI
       -size=19: 9, 13 or 19
       -load="": load figure
+
+Note
+----
+
+Current AI is not intelligent at all. Play with your friend.
