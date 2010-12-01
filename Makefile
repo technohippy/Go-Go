@@ -2,7 +2,7 @@ include $(GOROOT)/src/Make.inc
 
 TARG=go
 GOFILES=src/go/go.go
-O_FILES=point.$O cell.$O history.$O board.$O match.$O console_player.$O http_player.$O random_player.$O rpc_player.$O server.$O go.$O
+O_FILES=point.$O cell.$O history.$O board.$O match.$O console_player.$O http_player.$O random_player.$O rpc_player.$O http_server.$O go.$O
 
 all: $(O_FILES)
 install: $(O_FILES)
@@ -39,8 +39,8 @@ rpc_player.$O:
 match.$O:
 	$(QUOTED_GOBIN)/$(GC) -o match.$O src/go/match.go
 
-server.$O:
-	$(QUOTED_GOBIN)/$(GC) -o server.$O src/go/server.go
+http_server.$O:
+	$(QUOTED_GOBIN)/$(GC) -o http_server.$O src/go/http_server.go
 
 go.$O:
 	$(QUOTED_GOBIN)/$(GC) -o go.$O src/go/go.go
