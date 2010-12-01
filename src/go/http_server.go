@@ -1,6 +1,6 @@
 // This package implements a web server for Go games.
 // Note that games are volatile.
-package server
+package http_server
 
 import (
   "os"
@@ -22,19 +22,19 @@ const (
 )
 
 // Web server for a Go game.
-type Server struct {
+type HTTPServer struct {
   matches *vector.Vector
 }
 
 // New returns a server for Go games.
-func New(b *board.Board, ps [2]match.Player) *Server {
+func New(b *board.Board, ps [2]match.Player) *HTTPServer {
   ms := new(vector.Vector)
   ms.Push(match.New(b, ps))
-  return &Server{ms}
+  return &HTTPServer{ms}
 }
 
 // currentMatch returns the recent match.
-func (s *Server)currentMatch() *match.Match {
+func (s *HTTPServer)currentMatch() *match.Match {
   return s.matches.Last().(*match.Match)
 }
 
@@ -55,7 +55,7 @@ func getTemplate(filepath string) *template.Template {
 }
 
 // Start will start service.
-func (s *Server)Start(port int) {
+func (s *HTTPServer)Start(port int) {
   http.HandleFunc("/", http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
     log.Println("access /")
     params := new(struct { });

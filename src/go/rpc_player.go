@@ -9,16 +9,17 @@ import (
 )
 
 type RPCPlayer struct {
+  name string
   teban match.Teban
 }
 
-func New(t match.Teban) *RPCPlayer {
-  return &RPCPlayer{t}
+func New(name string, t match.Teban) *RPCPlayer {
+  return &RPCPlayer{name, t}
 }
 
 // Name returns a name of a player. (Now "rpc" is returned.)
-func (*RPCPlayer)Name() string {
-  return "rpc"
+func (rp *RPCPlayer)Name() string {
+  return rp.name
 }
 
 // Teban returns a teban of a player.

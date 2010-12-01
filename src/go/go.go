@@ -7,9 +7,11 @@ import (
   "flag"
   "./match"
   "./board"
-  "./server"
+  "./http_server"
+  "./rpc_server"
   "./console_player"
   "./http_player"
+  "./rpc_player"
   "./random_player"
 )
 
@@ -55,7 +57,7 @@ func startConsole(b *board.Board, useAI bool) {
 }
 
 // startConsole will start a server for a Go game.
-func startServer(port int, b *board.Board, useAI bool) {
+func startHTTPServer(port int, b *board.Board, useAI bool) {
   var players [2]match.Player
   if useAI {
     players = [2]match.Player{
@@ -66,7 +68,22 @@ func startServer(port int, b *board.Board, useAI bool) {
       http_player.New("ando", match.SENTE),
       http_player.New("yasushi", match.GOTE)}
   }
-  s := server.New(b, players)
+  s := http_server.New(b, players)
+  s.Start(port)
+}
+
+func startRPCServer(port int, b *board.Board, useAI bool) {
+  var players [2]match.Player
+  if useAI {
+    players = [2]match.Player{
+      rpc_player.New("ando", match.SENTE),
+      random_player.New(match.GOTE)}
+  } else {
+    players = [2]match.Player{
+      rpc_player.New("ando", match.SENTE),
+      rpc_player.New("yasushi", match.GOTE)}
+  }
+  s := rpc_server.New(b, players)
   s.Start(port)
 }
 
@@ -87,9 +104,9 @@ func main() {
   }
 
   if *server {
-    startServer(*port, b, *ai)
+    startHTTPServer(*port, b, *ai)
   } else if *rpc {
-    // TODO
+    startRPCServer(*port, b, *ai)
   } else {
     startConsole(b, *ai)
   }
