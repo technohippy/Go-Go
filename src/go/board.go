@@ -89,6 +89,19 @@ func (b *Board)CanPutAt(c cell.Cell, x int, y int, h *history.History) bool {
   // TODO: check Ko
 
   return true
+/*
+  // TODO: とりあえず実際に置いてみて置けるかどうかを確認する
+  ts, resp := b.PutAt(c, x, y, h)
+  b.TakeAt(x, y)
+  for _, t := range ts {
+    p := t.(point.Point)
+    b.putAt(c.Reverse(), p.X(), p.Y())
+  }
+  if resp == OK {
+    return true
+  }
+  return false
+*/
 }
 
 // PutAt will put a give piece at the given position and return removed pieces and the response code.
@@ -132,8 +145,8 @@ func (b *Board)putAt(c cell.Cell, x int, y int) {
   b.board[y][x] = c
 }
 
-// createCheckTable returns the same size of a table as the game board.
-func (b *Board)createCheckTable() [][]int {
+// CreateCheckTable returns the same size of a table as the game board.
+func (b *Board)CreateCheckTable() [][]int {
   checked := make([][]int, b.size+2)
   for i := 0; i <= b.size+1; i++ {
     checked[i] = make([]int, b.size+2)
@@ -147,7 +160,7 @@ func (b *Board)createCheckTable() [][]int {
 // shouldTakeOff checks if a piece at a given point should be removed from the board.
 func (b *Board)shouldTakeOff(x int, y int, c cell.Cell) bool {
   if b.At(x, y) != c { return false }
-  return b.isTangentToSpace(x, y, c, b.createCheckTable())
+  return b.isTangentToSpace(x, y, c, b.CreateCheckTable())
 }
 
 // isTangentToSpace checks if a piece at a given point is tangent to any blank cell.
@@ -205,6 +218,46 @@ func (b *Board)takeOff(x int, y int, c cell.Cell, takenOffs *vector.Vector) {
     b.takeOff(x, y-1, c, takenOffs)
     b.takeOff(x, y+1, c, takenOffs)
   }
+}
+
+// IsEye returns if the given point is an eye or not.
+func (b *Board)IsEye(c cell.Cell, x int, y int) bool {
+  if b.At(x-1, y).Is(c) && b.At(x+1, y).Is(c) && b.At(x, y-1).Is(c) && b.At(x, y+1).Is(c) {
+    count := 0
+    if b.At(x-1, y-1).Is(c) { count++ }
+    if b.At(x+1, y-1).Is(c) { count++ }
+    if b.At(x-1, y+1).Is(c) { count++ }
+    if b.At(x+1, y+1).Is(c) { count++ }
+    return 3 <= count
+  }
+  return false
+}
+
+// CountAreas returns the number of area for each color.
+func (b *Board)CountAreas() (int, int) {
+  blackArea, whiteArea := 0, 0
+  for y := 1; y <= b.size; y++ {
+    for x := 1; x <= b.size; x++ {
+      c := b.At(x, y)
+      uc := b.At(x, y-1)
+      dc := b.At(x, y+1)
+      if c == cell.BLACK {
+        blackArea++
+      } else if c == cell.WHITE {
+        whiteArea++
+      } else if uc == cell.BLACK {
+        blackArea++
+      } else if uc == cell.WHITE {
+        whiteArea++
+      } else if dc == cell.BLACK {
+        blackArea++
+      } else if dc == cell.WHITE {
+        whiteArea++
+      }
+    }
+  }
+
+  return blackArea, whiteArea
 }
 
 // Load will load a file which writes a stage of a board and apply it to the board.

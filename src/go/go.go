@@ -10,7 +10,7 @@ import (
   "./server"
   "./console_player"
   "./http_player"
-  "./auto_player"
+  "./random_player"
 )
 
 // startConsole will start a console for a Go game.
@@ -18,8 +18,9 @@ func startConsole(b *board.Board, useAI bool) {
   var players [2]match.Player
   if useAI {
     players = [2]match.Player{
-      console_player.New("ando", match.SENTE),
-      auto_player.New(match.GOTE)}
+      //console_player.New("ando", match.SENTE),
+      random_player.New(match.SENTE),
+      random_player.New(match.GOTE)}
   } else {
     players = [2]match.Player{
       console_player.New("ando", match.SENTE),
@@ -40,7 +41,11 @@ func startConsole(b *board.Board, useAI bool) {
       case match.PASS:
         if matchStatus == match.FINISH {
           fmt.Println("Finish!")
+          winner, blackArea, whiteArea := m.Judge()
+          fmt.Printf("%v won. (%d:%d)\n", winner, blackArea, whiteArea)
           os.Exit(0)
+        } else {
+          fmt.Println("Pass")
         }
       case match.GIVEUP:
         fmt.Printf("%s Win!\n", (*m.Winner).Name())
@@ -55,7 +60,7 @@ func startServer(port int, b *board.Board, useAI bool) {
   if useAI {
     players = [2]match.Player{
       http_player.New("ando", match.SENTE),
-      auto_player.New(match.GOTE)}
+      random_player.New(match.GOTE)}
   } else {
     players = [2]match.Player{
       http_player.New("ando", match.SENTE),
@@ -72,6 +77,7 @@ func main() {
   size := flag.Int("size", 19, "9, 13 or 19")
   filepath := flag.String("load", "", "load figure")
   ai := flag.Bool("ai", false, "use AI")
+  rpc := flag.Bool("rpc", false, "enable RPC server")
   flag.Parse()
 
   b := board.New(*size)
@@ -82,6 +88,8 @@ func main() {
 
   if *server {
     startServer(*port, b, *ai)
+  } else if *rpc {
+    // TODO
   } else {
     startConsole(b, *ai)
   }

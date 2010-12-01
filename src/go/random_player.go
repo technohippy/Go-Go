@@ -1,5 +1,5 @@
 // This package implements an AI for a Go game.
-package auto_player
+package random_player
 
 import (
   "fmt"
@@ -11,34 +11,36 @@ import (
 )
 
 // AI for a Go game.
-type AutoPlayer struct {
+type RandomPlayer struct {
   teban match.Teban
 }
 
 // New returns an AI for a Go game.
-func New(t match.Teban) *AutoPlayer {
-  return &AutoPlayer{t}
+func New(t match.Teban) *RandomPlayer {
+  return &RandomPlayer{t}
 }
 
-// Name returns a name of a player. (Now "auto" is returned.)
-func (ap *AutoPlayer)Name() string {
-  return "auto"
+// Name returns a name of a player. (Now "random" is returned.)
+func (*RandomPlayer)Name() string {
+  return "random"
 }
 
 // Teban returns a teban of a player.
-func (ap *AutoPlayer)Teban() match.Teban {
+func (ap *RandomPlayer)Teban() match.Teban {
   return ap.teban
 }
 
 // Next will chose a random point to put a piece.
-func (ap *AutoPlayer)Next(m *match.Match) *match.Response {
+func (ap *RandomPlayer)Next(m *match.Match) *match.Response {
   color := ap.teban.Color()
   candidates := new(vector.Vector)
   size := m.Board.Size()
-  for y := 0; y < size; y++ {
-    for x := 0; x < size; x++ {
+  for y := 1; y <= size; y++ {
+    for x := 1; x <= size; x++ {
       if m.Board.CanPutAt(color, x, y, m.History) {
-        candidates.Push(&point.Point{x, y})
+        if !m.Board.IsEye(color, x, y) {
+          candidates.Push(&point.Point{x, y})
+        }
       }
     }
   }
@@ -50,7 +52,7 @@ func (ap *AutoPlayer)Next(m *match.Match) *match.Response {
       p := candidates.At(int(bs[0]) % candidates.Len()).(*point.Point)
       ts, resp := m.Board.PutAt(color, p.X(), p.Y(), m.History)
       if resp == board.OK {
-        fmt.Printf("[auto] put %d,%d\n", p.X(), p.Y())
+        fmt.Printf("[random] put %d,%d\n", p.X(), p.Y())
         return match.NewPutResponse(p.X(), p.Y(), ts)
       }
     }

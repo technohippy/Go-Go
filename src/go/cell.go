@@ -18,3 +18,12 @@ func (c Cell)Reverse() Cell {
   if c == WHITE { return BLACK }
   return SPACE
 }
+
+func (c Cell)Is(cell Cell) bool {
+  return c == cell || c == OB
+}
+
+func (c Cell)String() string {
+  if c == BLACK { return "Black" }
+  return "White"
+}

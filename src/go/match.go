@@ -134,6 +134,16 @@ func (m *Match)Next() (Status, *Response) {
   return status, resp
 }
 
+func (m *Match)Judge() (cell.Cell, int, int) {
+  blackAreas, whiteAreas := m.Board.CountAreas()
+  if blackAreas < whiteAreas {
+    return cell.WHITE, blackAreas, whiteAreas
+  } else if whiteAreas < blackAreas {
+    return cell.BLACK, blackAreas, whiteAreas
+  }
+  return cell.OB, blackAreas, whiteAreas
+}
+
 // Json returns a string form of a match.
 func (m *Match)Json() string {
   return fmt.Sprintf("({'board':%s, 'turn':%d, 'agehama':[%d, %d], 'version':%d})",
